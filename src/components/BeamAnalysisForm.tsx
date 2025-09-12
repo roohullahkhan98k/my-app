@@ -5,13 +5,16 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { FormInput } from './FormInput';
 import { LoadingSpinner } from './LoadingSpinner';
-import { ResultsDisplay } from './ResultsDisplay';
+import { EnhancedResultsDisplay } from './EnhancedResultsDisplay';
+import { ResearchSubmissionForm } from './ResearchSubmissionForm';
 import { beamAnalysisSchema, BeamAnalysisFormData, AnalysisResult } from '@/lib/types';
-import { Calculator, Ruler, Zap, Settings } from 'lucide-react';
+import { Calculator, Ruler, Zap, Settings, Plus, FileText } from 'lucide-react';
 
 export const BeamAnalysisForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
   const {
     register,
@@ -38,23 +41,51 @@ export const BeamAnalysisForm: React.FC = () => {
   const onSubmit = async (data: BeamAnalysisFormData) => {
     setIsLoading(true);
     
-    // Simulate API call with dummy result
-    setTimeout(() => {
-      const dummyResult: AnalysisResult = {
-        shearStrength: Math.random() * 200 + 100, // Random value between 100-300 kN
-        confidence: Math.random() * 0.4 + 0.6, // Random confidence between 0.6-1.0
-        timestamp: new Date().toISOString(),
+    try {
+      const response = await fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to analyze beam');
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Prediction failed');
+      }
+
+      const analysisResult: AnalysisResult = {
+        shearStrength: result.shearStrength,
+        confidence: result.confidence,
+        timestamp: result.timestamp,
         inputData: data
       };
       
-      setResult(dummyResult);
-      setIsLoading(false);
+      setResult(analysisResult);
+      setShowResults(true);
       toast.success('Analysis completed successfully!');
-    }, 2000);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast.error(error instanceof Error ? error.message : 'Analysis failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
     reset();
+    setResult(null);
+    setShowResults(false);
+  };
+
+  const handleRetry = () => {
+    setShowResults(false);
     setResult(null);
   };
 
@@ -91,124 +122,154 @@ export const BeamAnalysisForm: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center space-y-4"
+        className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
       >
-        <div className="flex items-center justify-center gap-3">
-          <Calculator className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Beam Shear Strength Analysis
-          </h1>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center gap-3">
+              <Calculator className="h-10 w-10 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                AI Beam Analysis Platform
+              </h1>
+            </div>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Advanced machine learning-based analysis for predicting shear strength of reinforced concrete beams with steel plates. 
+              Trained on 978 samples with 79.4% accuracy.
+            </p>
+            
+            {/* Add Research Button */}
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => setShowSubmissionForm(true)}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
+              >
+                <Plus className="h-5 w-5" />
+                Add Your Research to Improve the Model
+              </button>
+            </div>
+          </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Advanced machine learning-based analysis for predicting shear strength of reinforced concrete beams with steel plates.
-        </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Form Section */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-6"
-        >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Input Parameters
-              </h2>
-            </div>
-            
-            <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-8">
-                             {formSections.map((section) => (
-                <div key={section.title} className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-600">
-                    <section.icon className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                      {section.title}
-                    </h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {section.fields.map((field) => (
-                      <FormInput
-                        key={field.name}
-                        name={field.name}
-                        label={field.label}
-                        register={register}
-                        error={errors[field.name]}
-                        step={field.step}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner size="sm" text="" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Calculator className="h-5 w-5" />
-                      Analyze Beam
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                >
-                  Reset
-                </button>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {!showResults ? (
+          /* Form Section - Show First */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Input Parameters
+                </h2>
               </div>
-            </form>
-          </div>
-        </motion.div>
+            
+              <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-8">
+                {formSections.map((section) => (
+                  <div key={section.title} className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-600">
+                      <section.icon className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        {section.title}
+                      </h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {section.fields.map((field) => (
+                        <FormInput
+                          key={field.name}
+                          name={field.name}
+                          label={field.label}
+                          register={register}
+                          error={errors[field.name]}
+                          step={field.step}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
 
-        {/* Results Section */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-6"
-        >
-          {isLoading && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-12">
+                <div className="flex gap-4 pt-6">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white font-medium py-4 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-lg"
+                  >
+                    {isLoading ? (
+                      <>
+                        <LoadingSpinner size="sm" text="" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Calculator className="h-6 w-6" />
+                        Analyze Beam
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="px-8 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        ) : (
+          /* Results Section - Show After Analysis */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6"
+          >
+            {/* Retry Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleRetry}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
+              >
+                <Calculator className="h-5 w-5" />
+                Analyze Another Beam
+              </button>
+            </div>
+
+            {/* Results Display */}
+            {result && <EnhancedResultsDisplay result={result} onRetry={handleRetry} />}
+          </motion.div>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-12">
               <LoadingSpinner size="lg" text="Processing beam analysis..." />
             </div>
-          )}
-          
-          {result && !isLoading && (
-            <ResultsDisplay result={result} />
-          )}
-          
-          {!result && !isLoading && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
-              <Calculator className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Ready for Analysis
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Enter the beam parameters and click &quot;Analyze Beam&quot; to get started.
-              </p>
-            </div>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
+
+        {/* Research Submission Form Modal */}
+        {showSubmissionForm && (
+          <ResearchSubmissionForm onClose={() => setShowSubmissionForm(false)} />
+        )}
       </div>
     </div>
   );
