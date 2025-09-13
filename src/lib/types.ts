@@ -17,10 +17,12 @@ export const beamAnalysisSchema = z.object({
 export type BeamAnalysisFormData = z.infer<typeof beamAnalysisSchema>;
 
 export interface AnalysisResult {
-  shearStrength: number;
-  confidence: number;
+  shearStrength?: number;
+  confidence?: number;
   timestamp: string;
   inputData: BeamAnalysisFormData;
+  success?: boolean;
+  error?: string;
 }
 
 export const fieldDescriptions = {

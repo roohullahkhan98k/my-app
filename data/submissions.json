@@ -2,7 +2,7 @@
   {
     "id": "sub_test_clean_001",
     "timestamp": "2025-09-12T21:00:00.000Z",
-    "status": "pending",
+    "status": "approved",
     "researcherName": "Dr. Emily Chen",
     "researcherEmail": "emily.chen@research.edu",
     "institution": "Advanced Engineering Institute",
@@ -21,7 +21,7 @@
       "Plate_Bottom_mm": 25,
       "V_Kn": 180.5
     },
-    "reviewedAt": "2025-09-12T15:42:18.805Z"
+    "reviewedAt": "2025-09-13T01:21:42.407Z"
   },
   {
     "id": "sub_test_clean_002",
