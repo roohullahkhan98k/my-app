@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const fileContent = fs.readFileSync(submissionsPath, 'utf-8');
     const submissions = JSON.parse(fileContent);
 
-    const submissionIndex = submissions.findIndex((s: any) => s.id === submissionId);
+    const submissionIndex = submissions.findIndex((s: { id: string }) => s.id === submissionId);
     
     if (submissionIndex === -1) {
       return NextResponse.json(

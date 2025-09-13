@@ -8,7 +8,16 @@ import { Brain, Database } from 'lucide-react';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
-  const [modelInfo, setModelInfo] = useState<any>(null);
+  const [modelInfo, setModelInfo] = useState<{
+    version: string;
+    training_samples: number;
+    additional_samples: number;
+    r2_score: number;
+    oob_score: number;
+    created_at: string;
+    description: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     // Load model information

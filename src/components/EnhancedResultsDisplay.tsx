@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AnalysisResult } from '@/lib/types';
-import { CheckCircle, TrendingUp, Clock, BarChart3, Target, AlertTriangle, Brain, Database, RotateCcw, Settings } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { CheckCircle, TrendingUp, Clock, BarChart3, Target, Brain, Database, RotateCcw, Settings } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 interface EnhancedResultsDisplayProps {
   result: AnalysisResult;
@@ -153,7 +153,7 @@ export const EnhancedResultsDisplay: React.FC<EnhancedResultsDisplayProps> = ({ 
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => [`${value.toFixed(1)} kN`, 'Shear Strength']} />
+              <Tooltip formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value} kN`, 'Shear Strength']} />
               <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const pythonShell = new PythonShell(path.basename(scriptPath), options);
     pythonShell.send(JSON.stringify(inputData));
     
-    const pythonResults = await new Promise<any>((resolve, reject) => {
+    const pythonResults = await new Promise<{ prediction: number; confidence: number; success?: boolean; error?: string }>((resolve, reject) => {
       pythonShell.on('message', (message) => {
         try {
           const result = JSON.parse(message);
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     // Return the successful prediction
     return NextResponse.json({
       success: true,
-      shearStrength: pythonResults.shearStrength,
+      shearStrength: pythonResults.prediction,
       confidence: pythonResults.confidence,
       timestamp: new Date().toISOString(),
       inputData: validatedData

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Lock, Hash, Shield } from 'lucide-react';
+import { Hash, Shield } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function AdminLogin() {

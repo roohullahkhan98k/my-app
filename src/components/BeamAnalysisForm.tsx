@@ -8,7 +8,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 import { EnhancedResultsDisplay } from './EnhancedResultsDisplay';
 import { ResearchSubmissionForm } from './ResearchSubmissionForm';
 import { beamAnalysisSchema, BeamAnalysisFormData, AnalysisResult } from '@/lib/types';
-import { Calculator, Ruler, Zap, Settings, Plus, FileText } from 'lucide-react';
+import { Calculator, Ruler, Zap, Settings, Plus } from 'lucide-react';
 
 export const BeamAnalysisForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);

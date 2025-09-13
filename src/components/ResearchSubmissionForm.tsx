@@ -15,7 +15,7 @@ interface SubmissionData extends BeamAnalysisFormData {
   researcherName: string;
   researcherEmail: string;
   institution: string;
-  notes: string;
+  notes?: string;
 }
 
 const submissionSchema = beamAnalysisSchema.extend({
@@ -32,8 +32,7 @@ export const ResearchSubmissionForm: React.FC<ResearchSubmissionFormProps> = ({ 
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    reset
+    formState: { errors }
   } = useForm<SubmissionData>({
     resolver: zodResolver(submissionSchema),
     defaultValues: {

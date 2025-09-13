@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, Database, Brain, TrendingUp, Users, FileText, Settings, RotateCcw } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Database, Brain, FileText, Settings, RotateCcw } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface ResearchSubmission {
@@ -27,6 +27,18 @@ interface ResearchSubmission {
     Plate_Bottom_mm: number;
     V_Kn: number;
   };
+  reviewedAt?: string;
+}
+
+interface ModelVersion {
+  version: string;
+  created_at: string;
+  training_samples: number;
+  additional_samples: number;
+  r2_score: number;
+  oob_score: number;
+  description: string;
+  status: string;
 }
 
 export default function AdminDashboard() {
@@ -34,8 +46,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRetraining, setIsRetraining] = useState(false);
   const [isRollingBack, setIsRollingBack] = useState(false);
-  const [modelVersions, setModelVersions] = useState<any[]>([]);
-  const [currentModelInfo, setCurrentModelInfo] = useState<any>(null);
+  const [currentModelInfo, setCurrentModelInfo] = useState<ModelVersion | null>(null);
 
   useEffect(() => {
     // Check if admin is authenticated
@@ -69,8 +80,7 @@ export default function AdminDashboard() {
       const response = await fetch('/api/admin/model-versions');
       if (response.ok) {
         const data = await response.json();
-        setModelVersions(data.versions || []);
-        setCurrentModelInfo(data.versions?.find((v: any) => v.status === 'active') || data.versions?.[0]);
+        setCurrentModelInfo(data.versions?.find((v: ModelVersion) => v.status === 'active') || data.versions?.[0]);
       }
     } catch (error) {
       console.error('Failed to load model versions:', error);
@@ -152,6 +162,7 @@ export default function AdminDashboard() {
         toast.error('Failed to reject submission');
       }
     } catch (error) {
+      console.error('Failed to reject submission:', error);
       toast.error('Failed to reject submission');
     }
   };
@@ -178,6 +189,7 @@ export default function AdminDashboard() {
         toast.error('Model rollback failed');
       }
     } catch (error) {
+      console.error('Failed to rollback model:', error);
       toast.error('Failed to rollback model');
     } finally {
       setIsRollingBack(false);
