@@ -25,13 +25,15 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result }) => {
     });
   };
 
-  const getConfidenceColor = (confidence: number) => {
+  const getConfidenceColor = (confidence: number | undefined) => {
+    if (confidence === undefined || confidence === null || isNaN(confidence)) return 'text-gray-600 dark:text-gray-400';
     if (confidence >= 0.8) return 'text-green-600 dark:text-green-400';
     if (confidence >= 0.6) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
   };
 
-  const getConfidenceText = (confidence: number) => {
+  const getConfidenceText = (confidence: number | undefined) => {
+    if (confidence === undefined || confidence === null || isNaN(confidence)) return 'Unknown Confidence';
     if (confidence >= 0.8) return 'High Confidence';
     if (confidence >= 0.6) return 'Medium Confidence';
     return 'Low Confidence';
@@ -63,7 +65,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result }) => {
             </span>
           </div>
           <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {formatNumber(result.shearStrength)} kN
+            {result.shearStrength ? formatNumber(result.shearStrength) : 'N/A'} kN
           </div>
         </div>
 
@@ -82,12 +84,12 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ result }) => {
               <motion.div
                 className="bg-blue-600 h-2 rounded-full"
                 initial={{ width: 0 }}
-                animate={{ width: `${result.confidence * 100}%` }}
+                animate={{ width: `${(result.confidence || 0) * 100}%` }}
                 transition={{ duration: 1, delay: 0.3 }}
               />
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {Math.round(result.confidence * 100)}% confidence level
+              {result.confidence ? Math.round(result.confidence * 100) : 0}% confidence level
             </div>
           </div>
         </div>

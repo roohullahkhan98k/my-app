@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AnalysisResult } from '@/lib/types';
-import { CheckCircle, TrendingUp, Clock, BarChart3, Target, Brain, Database, RotateCcw, Settings, AlertTriangle, Zap, Shield, Activity, Gauge } from 'lucide-react';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart, RadialBarChart, RadialBar } from 'recharts';
+import { CheckCircle, TrendingUp, Clock, BarChart3, Target, Brain, Database, RotateCcw, Settings, AlertTriangle, Shield, Activity } from 'lucide-react';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 interface EnhancedResultsDisplayProps {
   result: AnalysisResult;
@@ -135,16 +135,6 @@ export const EnhancedResultsDisplay: React.FC<EnhancedResultsDisplayProps> = ({ 
     },
   ];
 
-  // Safety analysis data
-  const safetyAnalysis = [
-    { name: 'Safety Factor', value: userStrength > 100 ? 1.5 : userStrength > 50 ? 1.2 : 0.8, fill: userStrength > 100 ? '#10B981' : userStrength > 50 ? '#F59E0B' : '#EF4444' },
-    { name: 'Design Load', value: 1.0, fill: '#6B7280' },
-  ];
-
-  // Confidence radial data
-  const confidenceData = [
-    { name: 'Confidence', value: (result.confidence || 0) * 100, fill: getConfidenceColor(result.confidence) === 'text-green-600' ? '#10B981' : getConfidenceColor(result.confidence) === 'text-yellow-600' ? '#F59E0B' : '#EF4444' }
-  ];
 
   return (
     <motion.div
@@ -240,6 +230,40 @@ export const EnhancedResultsDisplay: React.FC<EnhancedResultsDisplayProps> = ({ 
             </div>
           </div>
 
+          {/* Safety Analysis */}
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Shield className="h-5 w-5 text-orange-600" />
+              Safety Analysis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className={`text-2xl font-bold mb-2 ${userStrength > 100 ? 'text-green-600' : userStrength > 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  {userStrength > 100 ? 'SAFE' : userStrength > 50 ? 'MODERATE' : 'REVIEW NEEDED'}
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {userStrength > 100 ? 'Your beam exceeds safety thresholds and is suitable for high-load applications' : 
+                   userStrength > 50 ? 'Your beam meets minimum requirements for standard applications' : 
+                   'Consider reviewing beam design parameters for safety compliance'}
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Safety Factor</span>
+                  <span className={`text-lg font-bold ${userStrength > 100 ? 'text-green-600' : userStrength > 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {userStrength > 100 ? '1.5' : userStrength > 50 ? '1.2' : '0.8'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Load Capacity</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {formatValue(result.shearStrength, 'kN')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Timestamp */}
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Clock className="h-4 w-4" />
@@ -295,7 +319,7 @@ export const EnhancedResultsDisplay: React.FC<EnhancedResultsDisplayProps> = ({ 
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: feature.color }}></div>
                   <span className="text-sm font-medium text-gray-900 dark:text-white">{feature.name}</span>
                 </div>
-                <span className="text-sm font-bold text-gray-900 dark:text-white">{feature.value.toFixed(1)}%</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">{typeof feature.value === 'number' ? feature.value.toFixed(1) : feature.value}%</span>
               </div>
             ))}
           </div>
@@ -314,27 +338,41 @@ export const EnhancedResultsDisplay: React.FC<EnhancedResultsDisplayProps> = ({ 
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [`${value.toFixed(1)}%`, 'Impact']} />
+              <Tooltip formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value}%`, 'Impact']} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Strength Distribution */}
+      {/* Enhanced Strength Distribution */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Database className="h-5 w-5 text-green-600" />
-          Training Data Strength Distribution
+          Training Data Distribution & Your Position
         </h3>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={strengthAnalysis}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="range" />
-            <YAxis />
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={strengthAnalysis} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="range" tick={{ fontSize: 12 }} />
+            <YAxis label={{ value: 'Percentage (%)', angle: -90, position: 'insideLeft' }} />
             <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-            <Bar dataKey="percentage" fill="#10B981" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+              {strengthAnalysis.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.isUserRange ? '#3B82F6' : entry.color} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
+        <div className="mt-4 flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-blue-500 rounded"></div>
+            <span className="text-gray-600 dark:text-gray-400">Your beam falls in this range</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-gray-300 rounded"></div>
+            <span className="text-gray-600 dark:text-gray-400">Dataset distribution</span>
+          </div>
+        </div>
       </div>
 
       {/* Input Summary */}
